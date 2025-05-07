@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QPushButton, QSpacerItem, QSizePolicy, QHBoxLayout, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor,QFont
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtGui import QColor, QFont
 from .custom_widget import ControlButton  
 
 class Page2(QWidget):
@@ -14,7 +13,8 @@ class Page2(QWidget):
         layout.setSpacing(20)
 
         # Recent Batches Table
-        layout.addWidget(self.create_recent_batches_table())
+        self.table = self.create_recent_batches_table()
+        layout.addWidget(self.table)
 
         # Control Panel
         layout.addLayout(self.create_control_panel())
@@ -108,46 +108,22 @@ class Page2(QWidget):
             btn.setMinimumWidth(150)
             btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #00BFFF;
+                    background-color: #007BFF;
                     color: white;
                     padding: 8px 12px;
                     border-radius: 5px;
                     font-weight: bold;
                     min-width: 120px;
                 }
-                QPushButton:hover {
-                    background-color: #0056b3;
-                }
-                QPushButton:pressed {
-                    background-color: #004494;
+                QPushButton:disabled {
+                    background-color: #007BFF;
+                    opacity: 0.7;
                 }
             """)
+            btn.setEnabled(False)
             layout.addWidget(btn)
 
         layout.addStretch(1)
         return layout
 
-    def export_log(self):
-        options = QFileDialog.Options()
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Log File", "", "CSV Files (*.csv);;All Files (*)", options=options
-        )
-        if not file_path:
-            return 
-
-        try:
-            with open(file_path, 'w') as file:
-                headers = [self.table.horizontalHeaderItem(i).text() for i in range(self.table.columnCount())]
-                file.write(",".join(headers) + "\n")
-
-                for row in range(self.table.rowCount()):
-                    row_data = []
-                    for col in range(self.table.columnCount()):
-                        item = self.table.item(row, col)
-                        row_data.append(item.text() if item else "")
-                    file.write(",".join(row_data) + "\n")
-            QMessageBox.information(self, "Export Successful", f"Log saved to {file_path}")
-        except Exception as e:
-            QMessageBox.critical(self, "Export Failed", f"Error: {str(e)}") 
-        
 

@@ -1,18 +1,10 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget,
-    QPushButton, QHeaderView, QFrame, QProgressBar, QLabel,
-    QToolTip, QComboBox, QSpacerItem, QSizePolicy, QStackedWidget 
-) 
-from PyQt5.QtChart import QChartView, QLineSeries, QChart, QBarSeries,QBarSet, QCategoryAxis, QChart, QValueAxis
-from PyQt5.QtGui import QColor, QFont, QPixmap, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QTimer, QDate, QTime, QMargins
-from ui.dashboards.base_dashboard import BaseDashboard
-from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget, QPushButton
+from PyQt5.QtCore import Qt
+from .base_dashboard import BaseDashboard
+from .analysis_page1 import AnalysisPage1
+from .analysis_page2 import AnalysisPage2
 
-from .page1 import Page1
-from .page2 import Page2
-
-class ProductionDashboard(BaseDashboard):
+class AnalysisDashboard(BaseDashboard):
     def init_ui(self):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(30, 30, 30, 30)
@@ -23,7 +15,7 @@ class ProductionDashboard(BaseDashboard):
             main_layout.addLayout(self.create_nav_bar())
 
         # === Header ===
-        header = QLabel("🏭 Production Dashboard")
+        header = QLabel("📊 Analysis Dashboard")
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
         main_layout.addWidget(header)
@@ -31,12 +23,12 @@ class ProductionDashboard(BaseDashboard):
         # === Stacked Pages ===
         self.stacked_pages = QStackedWidget()
 
-        # Page 1 - KPIs, Chart
-        self.page1 = Page1()
+        # Page 1 - Efficiency and Defect Trends
+        self.page1 = AnalysisPage1()
         self.stacked_pages.addWidget(self.page1)
 
-        # Page 2 - Table, Alerts
-        self.page2 = Page2()
+        # Page 2 - Production Volume and Quality
+        self.page2 = AnalysisPage2()
         self.stacked_pages.addWidget(self.page2)
 
         main_layout.addWidget(self.stacked_pages)
@@ -45,8 +37,8 @@ class ProductionDashboard(BaseDashboard):
         nav_layout = QHBoxLayout()
         nav_layout.addStretch(1)
 
-        self.btn_prev = QPushButton("⮜")  # Left arrow
-        self.btn_next = QPushButton("⮞")  # Right arrow
+        self.btn_prev = QPushButton("⮜")
+        self.btn_next = QPushButton("⮞")
 
         arrow_style = """
             QPushButton {
