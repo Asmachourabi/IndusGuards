@@ -1,8 +1,3 @@
-"""
-Industrial Lines Dashboard - Version 1.0 (May 2025)
-Integrates machine management and monitoring functionality
-"""
-
 import sys
 import sqlite3
 import time
@@ -12,6 +7,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+from collections import Counter
 from .base_dashboard import BaseDashboard
 
 class IndustrialLinesDashboard(BaseDashboard):
@@ -238,49 +234,49 @@ class MachineContent(QWidget):
         # Clear previous graph if it exists
         for i in reversed(range(self.graph_frame.layout().count())): 
             self.graph_frame.layout().itemAt(i).widget().setParent(None)
-            
-        # Create figure with transparent background
+
+        # Connect to database and count statuses
+        conn = sqlite3.connect("machines.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT status FROM machines")
+        statuses = [row[0] for row in cursor.fetchall()]
+        conn.close()
+
+        # Count machines by status
+        status_counts = Counter(statuses)
+
+        # Plot bar chart
         plt.style.use('dark_background')
-        fig = plt.figure(figsize=(8, 4), facecolor='none')
+        fig = plt.figure(figsize=(6, 4), facecolor='none')
         ax = fig.add_subplot(111)
-        
-        # Make plot background transparent
         fig.patch.set_alpha(0)
         ax.patch.set_alpha(0)
-        
-        # Sample data - replace with real data in production
-        times = ['8:00', '9:00', '10:00', '11:00', '12:00']
-        production = [85, 92, 88, 95, 90]
-        
-        # Plot with improved visibility
-        ax.plot(times, production, color='#00C5CD', marker='o', linewidth=2, markersize=8)
-        
-        # Set title and labels with better visibility
-        ax.set_title('Machine Production Rate', color='white', pad=20, fontsize=12, fontweight='bold')
-        ax.set_xlabel('Time', color='white', fontsize=10, labelpad=10)
-        ax.set_ylabel('Production Units', color='white', fontsize=10, labelpad=10)
-        
-        # Customize ticks and grid
-        ax.tick_params(axis='both', colors='white', which='major', labelsize=9)
-        ax.grid(True, color='white', alpha=0.2, linestyle='--')
-        
-        # Style the axes
+
+        labels = list(status_counts.keys())
+        values = list(status_counts.values())
+        bars = ax.bar(labels, values, color='#00C5CD')
+
+        # Add status text above each bar
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, yval, str(yval), 
+                    ha='center', va='bottom', color='white', fontsize=10, fontweight='bold')
+
+        # Set title and labels with reduced font sizes
+        ax.set_title('Machines by Status', color='white', pad=20, fontsize=10, fontweight='bold')  # Reduced font size
+        ax.set_ylabel('Number of Machines', color='white', fontsize=8, labelpad=10)  # Reduced font size
+        ax.tick_params(axis='x', colors='white', labelsize=8)  # Reduced font size
+        ax.tick_params(axis='y', colors='white', labelsize=8)  # Reduced font size
+
+        # Make the x-axis labels horizontal
+        plt.xticks(rotation=0, ha='center')
+
+        # Add gridlines and adjust spines
+        ax.grid(True, axis='y', color='white', alpha=0.2, linestyle='--')
         for spine in ax.spines.values():
             spine.set_color('white')
-            spine.set_linewidth(1)
-        
-        # Set y-axis range with padding
-        ymin = min(production) - 5
-        ymax = max(production) + 5
-        ax.set_ylim(ymin, ymax)
-        
-        # Rotate x-axis labels
-        plt.xticks(rotation=45)
-        
-        # Add some padding to prevent label cutoff
-        plt.subplots_adjust(left=0.15, bottom=0.2)
-            
-        # Create canvas with transparent background
+
+        # Resize the canvas to fit all the labels
         canvas = FigureCanvas(fig)
         canvas.setStyleSheet("background-color: transparent;")
         self.graph_frame.layout().addWidget(canvas)
